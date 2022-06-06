@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Json格式化</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <link rel="stylesheet" href="../../css/jquery.json-viewer.css" />
+  <link rel="stylesheet" href="../../lib/layui-v2.6.3/css/layui.css" media="all">
+  <link rel="stylesheet" href="../../css/public.css" media="all">
+</head>
+<style type="text/css">
+  body {
+    margin: 0 100px;
+    font-family: sans-serif;
+  }
+
+  p.options label {
+    margin-right: 10px;
+  }
+
+  p.options input[type=checkbox] {
+    vertical-align: middle;
+  }
+
+  textarea#json-input {
+    width: 100%;
+    height: 200px;
+  }
+
+  pre#json-renderer {
+    border: 1px solid #aaa;
+  }
+</style>
+
+<body style="height: 98%;">
+  <textarea id="json-input" autocomplete="off"></textarea>
+
+
+
+  <form class="layui-form" action="">
+    <div class="layui-form-item">
+      <button id="btn-json-viewer" name="btn-json-viewer" lay-submit lay-filter="btn-json-viewer"
+        class="layui-btn layui-btn-normal">格式化</button>
+      <input type="checkbox" name="like[collapsed]" id="collapsed" title="折叠所有节点">
+      <input type="checkbox" name="like[collapsable]" id="root-collapsable" title="显示Root节点" checked="">
+      <input type="checkbox" name="like[quotes]" id="with-quotes" title="关键字使用引号">
+      <input type="checkbox" name="like[links]" id="with-links" title="地址带下划线">
+      <button id="btn-copy" name="btn-copy" lay-submit lay-filter="btn-copy"
+        class="layui-btn layui-btn-warm">复制</button>
+    </div>
+
+  </form>
+
+
+  <pre id="json-renderer"></pre>
+  <textarea id="copyarea" hidden></textarea>
+  </div>
+
+  <!-- 注意， 只需要引用 JS，无需引用任何 CSS ！！！-->
+
+  <script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+  <script src="../../js/jquery.json-viewer.js"></script>
+  <script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+  <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+  <script>
+
+    $(function () {
+
+
+      layui.use(['form'], function () {
+        var form = layui.form;
+        form.render();
+
+        form.on('checkbox', function (data) {
+          renderJson();
+        });
+        //监听提交
+        form.on('submit(btn-json-viewer)', function (data) {
+          renderJson();
+          return false;
+        });
+
+        //复制
+        form.on('submit(btn-copy)', function (data) {
+          $('#copyarea').show();
+          $('#copyarea').text($('#json-renderer').text());
+          $('#copyarea').select();
+          document.execCommand('Copy');
+          $('#copyarea').text('');
+          $('#copyarea').hide();
+          return false;
+        });
+      });
+
+      function renderJson() {
+        try {
+          var input = eval('(' + $('#json-input').val() + ')');
+        }
+        catch (error) {
+          // return alert("Cannot eval JSON: " + error);
+          layer.alert("无法序列化JSON：" + error, {
+            title: '格式化返回'
+          });
+        }
+        var options = {
+          collapsed: $('#collapsed').is(':checked'),
+          rootCollapsable: $('#root-collapsable').is(':checked'),
+          withQuotes: $('#with-quotes').is(':checked'),
+          withLinks: $('#with-links').is(':checked')
+        };
+        $('#json-renderer').jsonViewer(input, options);
+      }
+    });
+  </script>
+</body>
+
+</html>

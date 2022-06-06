@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+
+<body onload="load()">
+    <input type="hidden" value="1" id='mode' />
+    <div class="layui-form layuimini-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">菜单名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="Title" id="Title" lay-verify="required" lay-reqtext="菜单名称不能为空" placeholder="请输入菜单名称"
+                    value="" class="layui-input">
+                <tip>填写菜单名称。</tip>
+            </div>
+        </div>
+        <!-- <div class="layui-form-item">
+        <label class="layui-form-label required">性别</label>
+        <div class="layui-input-block">
+            <input type="radio" name="sex" value="男" title="男" checked="">
+            <input type="radio" name="sex" value="女" title="女">
+        </div>
+    </div> -->
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">菜单地址</label>
+            <div class="layui-input-block">
+                <input type="text" name="Href" id="Href" placeholder="请输入菜单地址" value="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">菜单图标</label>
+            <div class="layui-input-block">
+                <input type="text" name="Icon" id="Icon" placeholder="请输入菜单图标" value="fa fa-address-book"
+                    class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">是否打开新窗体</label>
+            <div class="layui-input-block">
+                <input type="radio" name="Target" id='TargetYes' value="_blank" title="是">
+                <input type="radio" name="Target" id='TargetNo' value="_self" title="否" checked="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">是否有效</label>
+            <div class="layui-input-block">
+                <input type="radio" name="Status" id="StatusYes" value="1" title="有效" checked="">
+                <input type="radio" name="Status" id="StatusNo" value="0" title="无效">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">菜单类型</label>
+            <div class="layui-input-block">
+                <input type="radio" name="Type" id="Type0" value="0" title="主页">
+                <input type="radio" name="Type" id="Type1" value="2" title="文件夹" checked="">
+                <input type="radio" name="Type" id="Type2" value="2" title="菜单">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">父级菜单</label>
+            <div class="layui-input-block">
+                <select name="ParentID" id="ParentID">
+                    <option value="-1">请选择</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+    <script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+    <script src="../../js/api-config.js" charset="utf-8"></script>
+    <script>
+        //动态绑定下拉框
+        function loadmenu(data) {
+            var returndata = JSON.parse(data);
+            var allMenuData = returndata.data;
+            console.log(allMenuData);
+            if (allMenuData == undefined) return;
+
+            var _html = "";
+            _html = '';
+            for (var i = 0; i < allMenuData.length; i++) {
+                if (allMenuData[i].Href != '') continue;
+                _html = _html + '<option value="' + allMenuData[i].ID + '">' + allMenuData[i].Title + '</option>';
+            }
+
+
+            $("#ParentID").append(_html);
+            layui.use(['form'], function () {
+                var form = layui.form;
+                form.render('select');
+            });
+
+
+            var id = getQueryVariable('id');
+            if (id != -1) {
+                $('#mode').val(id);
+
+                for (var i = 0; i < allMenuData.length; i++) {
+                    if (allMenuData[i].ID != id) continue;
+                    var item = allMenuData[i];
+                    //
+                    $('#Title').val(item.Title);
+                    $('#Href').val(item.Href);
+                    $('#Icon').val(item.Icon);
+                    if (item.Target == "_blank") {
+                        $('#TargetYes').val ("");
+                    }
+                    if (item.Status == "0") {
+                        $('#StatusNo').checked = true;
+                    }
+                    if (item.Type == "0") {
+                        $('#Type0').checked = true;
+                    } else {
+                        if (item.Href == '') {
+                            $('#Type1').checked = true;
+                        } else {
+                            $('#Type2').checked = true;
+                        }
+                    }
+                    $('#ParentID').val(item.ParentID);
+                }
+            }
+        }
+
+        function getQueryVariable(variable) {
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split("=");
+                if (pair[0] == variable) { return pair[1]; }
+            }
+            return -1;
+        }
+        //页面加载调用
+        function load() {
+            var allMenuData = window.QueryAllMenu(loadmenu);
+        }
+
+
+
+
+        layui.use(['form'], function () {
+            var form = layui.form,
+                layer = layui.layer,
+                $ = layui.$;
+
+
+            function tipMsg(data) {
+               try{
+                var returndata = JSON.parse(data);
+                if (returndata.code == 1) {
+                    layer.alert("新增成功！", {
+                        title: '服务端返回'
+                    }, function () {
+                        location.reload()
+                    });
+                } else {
+                    layer.alert(returndata.msg, {
+                        title: '服务端返回'
+                    }, function () {
+                        location.reload()
+                    });
+                }
+               }catch{
+                layer.alert("请求出错", {
+                        title: '请求出错'
+                    }, function () {
+                        location.reload()
+                    });
+               }
+               
+            }
+            //监听提交
+            form.on('submit(saveBtn)', function (data) {
+
+                var InJson = JSON.stringify(data.field);
+                PostURL(InsertMenu, InJson, tipMsg);
+                return false;
+            });
+
+        });
+    </script>
+</body>
+
+</html>
