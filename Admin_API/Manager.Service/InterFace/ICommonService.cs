@@ -10,7 +10,7 @@ namespace Manager.Service.InterFace
     public interface ICommonService
     {
         /// <summary>
-        /// 初始化
+        /// 初始化  
         /// </summary>
         /// <returns></returns>
         Init InitMenu(ref string ErrMsg);
